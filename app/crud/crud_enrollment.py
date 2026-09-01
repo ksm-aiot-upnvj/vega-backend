@@ -16,9 +16,18 @@ class CRUDEnrollment:
         ).first()
 
     def create(self, db: Session, *, obj_in: EnrollmentCreate, user_id: str) -> Enrollment:
+        from app.models.course import Course
+        course = db.query(Course).filter(Course.id == obj_in.course_id).first()
+        total_lessons = 0
+        if course and course.modules:
+            total_lessons = sum(len(m.lessons) for m in course.modules)
+
         db_obj = Enrollment(
             course_id=obj_in.course_id,
             user_id=user_id,
+            total_lessons=total_lessons,
+            progress_percentage=0.0,
+            completed_lessons=0
         )
         db.add(db_obj)
         db.commit()

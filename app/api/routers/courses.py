@@ -234,4 +234,27 @@ def update_course_builder(
             
     db.commit()
     db.refresh(course)
+
+    # Re-calculate progress for all enrollments
+    enrollments = db.query(Enrollment).filter(Enrollment.course_id == id).all()
+    if enrollments:
+        total_lessons = sum(len(m.lessons) for m in course.modules)
+        lesson_ids = [l.id for m in course.modules for l in m.lessons]
+        
+        for e in enrollments:
+            e.total_lessons = total_lessons
+            if total_lessons > 0:
+                completed_count = db.query(LessonProgress).filter(
+                    LessonProgress.user_id == e.user_id,
+                    LessonProgress.lesson_id.in_(lesson_ids),
+                    LessonProgress.is_completed == True
+                ).count()
+                e.completed_lessons = completed_count
+                e.progress_percentage = (completed_count / total_lessons) * 100
+            else:
+                e.completed_lessons = 0
+                e.progress_percentage = 0.0
+        db.commit()
+        db.refresh(course)
+
     return course

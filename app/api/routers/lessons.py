@@ -72,6 +72,7 @@ def get_my_submissions(
             "lesson_id": p.lesson_id,
             "lesson_title": lesson.title,
             "lesson_type": lesson.lesson_type,
+            "lesson_content": lesson.content,
             "module_title": module.title if module else "-",
             "is_completed": p.is_completed,
             "completed_at": p.completed_at.isoformat() if p.completed_at else None,
@@ -151,4 +152,31 @@ def complete_lesson(
         db.add(progress)
         
     db.commit()
+
+    # Update Enrollment progress
+    if module:
+        from app.models.enrollment import Enrollment
+        course = db.query(CourseModel).filter(CourseModel.id == module.course_id).first()
+        if course:
+            enrollment = db.query(Enrollment).filter(
+                Enrollment.user_id == current_user.id,
+                Enrollment.course_id == course.id
+            ).first()
+            if enrollment:
+                # Count total lessons in course
+                lesson_ids = [l.id for m in course.modules for l in m.lessons]
+                total_lessons = len(lesson_ids)
+                if total_lessons > 0:
+                    # Count completed lessons for this user
+                    completed_count = db.query(LessonProgress).filter(
+                        LessonProgress.user_id == current_user.id,
+                        LessonProgress.lesson_id.in_(lesson_ids),
+                        LessonProgress.is_completed == True
+                    ).count()
+                    
+                    enrollment.completed_lessons = completed_count
+                    enrollment.total_lessons = total_lessons
+                    enrollment.progress_percentage = (completed_count / total_lessons) * 100
+                    db.commit()
+
     return {"success": True, "message": "Berhasil menyelesaikan lesson"}
