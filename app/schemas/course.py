@@ -36,3 +36,22 @@ class Course(CourseInDBBase):
 
 class CourseWithModules(Course):
     modules: List[Module] = []
+
+class LessonBuilder(BaseModel):
+    id: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    content: Optional[str] = None
+    lesson_type: str = "TEXT"
+    order: int
+    task_code: Optional[str] = None
+
+class ModuleBuilder(BaseModel):
+    id: Optional[str] = None
+    title: str
+    order: int
+    deadline: Optional[datetime] = None
+    lessons: List[LessonBuilder] = []
+
+class CourseBuilderPayload(BaseModel):
+    modules: List[ModuleBuilder] = []

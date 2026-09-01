@@ -34,4 +34,10 @@ class CRUDCourse:
         db.refresh(db_obj)
         return db_obj
 
+    def remove(self, db: Session, *, id: str) -> Course:
+        obj = db.query(Course).get(id)
+        db.delete(obj)
+        db.commit()
+        return obj
+
 crud_course = CRUDCourse()

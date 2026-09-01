@@ -9,6 +9,7 @@ class LessonBase(BaseModel):
     lesson_type: Optional[str] = "TEXT"
     order: Optional[int] = 1
     duration: Optional[int] = 0
+    task_code: Optional[str] = None
 
 class LessonCreate(LessonBase):
     module_id: str

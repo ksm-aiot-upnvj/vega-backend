@@ -39,6 +39,26 @@ def get_current_user(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+from fastapi import Request
+
+def get_current_user_optional(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> User | None:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.split(" ")[1]
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+        user = crud.crud_user.get(db, id=token_data.sub)
+        return user
+    except Exception:
+        return None
+
 class RequireRole:
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles

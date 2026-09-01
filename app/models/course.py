@@ -56,6 +56,7 @@ class Module(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     order = Column(Integer, default=1)
+    deadline = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     course = relationship("Course", back_populates="modules")
@@ -69,10 +70,11 @@ class Lesson(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     content = Column(Text, nullable=True)
-    lesson_type = Column(String, default="TEXT") # TEXT, VIDEO
+    lesson_type = Column(String, default="TEXT") # TEXT, VIDEO, IMAGE, FILE, LINK, TASK
     order = Column(Integer, default=1)
     duration = Column(Integer, default=0) # in minutes
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     is_completed = Column(Boolean, default=False) # For demo purpose, real completion should be tracked per user
+    task_code = Column(String, nullable=True) # Secret code for TASK completion
 
     module = relationship("Module", back_populates="lessons")
