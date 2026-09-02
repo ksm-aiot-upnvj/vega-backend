@@ -7,9 +7,19 @@ class AnnouncementBase(BaseModel):
     description: str
     event_date: Optional[datetime] = None
     target_audience: str
+    status: Optional[str] = "PUBLISHED"
+    scheduled_at: Optional[datetime] = None
 
 class AnnouncementCreate(AnnouncementBase):
     pass
+
+class AnnouncementUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[datetime] = None
+    target_audience: Optional[str] = None
+    status: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
 
 class Announcement(AnnouncementBase):
     id: str
