@@ -99,5 +99,37 @@ def delete_user(
     user = crud.crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user = crud.crud_user.remove(db, id=user_id)
+    crud.crud_user.remove(db, id=user_id)
+    return user
+
+@router.put("/{user_id}/mentor", response_model=User)
+def set_mentor(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    mentor_id: str | None = Body(..., embed=True),
+    current_user: UserModel = Depends(deps.RequireRole(["ADMIN"])),
+) -> Any:
+    """
+    Set or remove a mentor for a user. Admin only.
+    """
+    from app import crud
+    user = crud.crud_user.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if mentor_id:
+        mentor = crud.crud_user.get(db, id=mentor_id)
+        if not mentor or mentor.role != "MENTOR":
+            raise HTTPException(status_code=400, detail="Invalid mentor ID")
+        
+        # Check limit of 6 members per mentor
+        current_members = db.query(UserModel).filter(UserModel.mentor_id == mentor_id).count()
+        if user.mentor_id != mentor_id and current_members >= 6:
+            raise HTTPException(status_code=400, detail="Mentor already has maximum of 6 members")
+            
+    user.mentor_id = mentor_id
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     return user

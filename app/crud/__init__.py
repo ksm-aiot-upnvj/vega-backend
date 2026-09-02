@@ -4,3 +4,4 @@ from .crud_category import crud_category
 from .crud_enrollment import crud_enrollment
 from .crud_quiz import crud_quiz
 from .crud_assignment import crud_assignment
+from . import crud_project
