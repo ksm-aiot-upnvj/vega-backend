@@ -16,6 +16,7 @@ erDiagram
         String interest
         String avatar_url
         DateTime created_at
+        String mentor_id FK
     }
 
     Category {
@@ -151,11 +152,47 @@ erDiagram
         DateTime graded_at
     }
 
+    Announcement {
+        String id PK
+        String title
+        Text description
+        DateTime event_date
+        String target_audience
+        String mentor_id FK
+        DateTime created_at
+        String status
+        DateTime scheduled_at
+    }
+
+    AnnouncementNotification {
+        String id PK
+        String announcement_id FK
+        String user_id FK
+        Boolean is_notified
+        DateTime created_at
+    }
+
+    Project {
+        String id PK
+        String mentor_id FK
+        String title
+        Text description
+        String whatsapp_link
+        String github_link
+        String image_url
+        DateTime created_at
+        DateTime updated_at
+    }
+
     User ||--o{ Course : "mentors"
     User ||--o{ Enrollment : "has"
     User ||--o{ LessonProgress : "tracks"
     User ||--o{ QuizAttempt : "attempts"
     User ||--o{ Submission : "submits"
+    User ||--o{ User : "mentors_member"
+    User ||--o{ Announcement : "creates"
+    User ||--o{ AnnouncementNotification : "receives"
+    User ||--o{ Project : "creates"
     
     Category ||--o{ Course : "contains"
     
@@ -176,11 +213,13 @@ erDiagram
     Question ||--o{ Option : "has"
     
     Assignment ||--o{ Submission : "has"
+
+    Announcement ||--o{ AnnouncementNotification : "triggers"
 ```
 
 ## Entities
 
-- **User**: Represents a user in the system (member, mentor, admin). Contains authentication credentials and profile information.
+- **User**: Represents a user in the system (member, mentor, admin). Contains authentication credentials and profile information, and optional `mentor_id` for mentor assignments.
 - **Category**: Represents a classification grouping for courses.
 - **Course**: The main entity for a learning subject. Authored by a mentor (User) and belongs to a Category.
 - **Module**: A structural grouping unit within a Course. Contains lessons, quizzes, and assignments.
@@ -193,6 +232,9 @@ erDiagram
 - **QuizAttempt**: Tracks a User's attempt on a Quiz, containing their total score and pass/fail status.
 - **Assignment**: A task given to students that requires manual submission. Belongs to a Module/Course.
 - **Submission**: A User's submitted work for an Assignment, graded by a mentor.
+- **Announcement**: General or specific announcements created by mentors/admins.
+- **AnnouncementNotification**: Tracks whether a user has been notified or read a specific announcement.
+- **Project**: Represents a project associated with a mentor's group. Mentors can post links (GitHub, WhatsApp), descriptions, and an image for their group.
 
 ## Relationships
 
@@ -210,6 +252,11 @@ erDiagram
 - **1:N (Quiz -> QuizAttempt)**: A Quiz can have many attempts.
 - **1:N (Assignment -> Submission)**: An Assignment can have many submissions.
 - **1:N (User -> Submission/QuizAttempt)**: A User can submit many assignments and attempt many quizzes.
+- **1:N (User -> User)**: A User (Mentor) can mentor many other Users.
+- **1:N (User -> Announcement)**: A User (Mentor/Admin) can create many announcements.
+- **1:N (Announcement -> AnnouncementNotification)**: An announcement triggers many notifications.
+- **1:N (User -> AnnouncementNotification)**: A User receives many notifications.
+- **1:N (User -> Project)**: A User (Mentor) can create many group projects.
 
 ## Design Issues
 
