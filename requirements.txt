@@ -2,10 +2,10 @@ fastapi
 uvicorn
 sqlalchemy
 alembic
-pydantic
+pydantic[email]
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
 python-dotenv
-bcrypt
+bcrypt==3.2.2

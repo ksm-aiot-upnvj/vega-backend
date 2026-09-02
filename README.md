@@ -26,7 +26,7 @@ Jika kamu ingin menjalankan tanpa pusing memikirkan *dependencies* di komputer l
    ```
 2. **Jalankan Container**
    ```bash
-   docker run -p 8000:8000 --env-file .env vega-backend
+   docker run -p 8000:8000 -v "$PWD/vega.db:/app/vega.db" --env-file .env vega-backend
    ```
    > API dapat diakses di http://localhost:8000. Untuk dokumentasi Swagger API secara interaktif, buka http://localhost:8000/docs.
 

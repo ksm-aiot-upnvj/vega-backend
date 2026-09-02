@@ -5,7 +5,7 @@ from app.api import deps
 from app.schemas.course import Course, CourseCreate, CourseWithModules, CourseBuilderPayload
 from app import crud
 from app.models.user import User
-from app.models.course import Module as ModuleModel, Lesson as LessonModel
+from app.models.course import Module as ModuleModel, Lesson as LessonModel, Course as CourseModel
 from app.models.progress import LessonProgress
 from app.models.enrollment import Enrollment
 import uuid
@@ -26,6 +26,57 @@ def read_courses(
     if not current_user or current_user.role == "MEMBER":
         courses = [c for c in courses if c.status == "PUBLISHED"]
     return courses
+
+from datetime import datetime
+from pydantic import BaseModel
+
+class DeadlineEventSchema(BaseModel):
+    id: str
+    date: datetime
+    title: str
+    course_title: str
+
+@router.get("/my/deadlines", response_model=List[DeadlineEventSchema])
+def get_my_deadlines(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user)
+) -> Any:
+    """
+    Returns module deadlines relevant to the current user:
+    - MEMBER: modules from courses they are enrolled in
+    - MENTOR/ADMIN: modules from their own courses
+    """
+    if current_user.role in ("MENTOR", "ADMIN"):
+        results = (
+            db.query(ModuleModel, CourseModel)
+            .join(CourseModel, CourseModel.id == ModuleModel.course_id)
+            .filter(CourseModel.mentor_id == current_user.id)
+            .filter(ModuleModel.deadline.isnot(None))
+            .all()
+        )
+    else:
+        enrolled_course_ids = (
+            db.query(Enrollment.course_id)
+            .filter(Enrollment.user_id == current_user.id)
+            .subquery()
+        )
+        results = (
+            db.query(ModuleModel, CourseModel)
+            .join(CourseModel, CourseModel.id == ModuleModel.course_id)
+            .filter(ModuleModel.course_id.in_(enrolled_course_ids))
+            .filter(ModuleModel.deadline.isnot(None))
+            .all()
+        )
+
+    output = []
+    for mod, course in results:
+        output.append({
+            "id": mod.id,
+            "date": mod.deadline,
+            "title": mod.title,
+            "course_title": course.title
+        })
+    return output
 
 @router.get("/{id}", response_model=CourseWithModules)
 def read_course(
