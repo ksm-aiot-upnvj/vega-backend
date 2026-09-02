@@ -7,3 +7,4 @@ from app.models.enrollment import Enrollment
 from app.models.quiz import Quiz, Question, Option, QuizAttempt
 from app.models.assignment import Assignment, Submission
 from app.models.progress import LessonProgress
+from app.models.announcement import Announcement, AnnouncementNotification
