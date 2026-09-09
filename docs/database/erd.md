@@ -28,12 +28,12 @@ erDiagram
 
     Course {
         String id PK
-        String category_id FK
-        String mentor_id FK
         String title
         Text description
+        String category_id FK
         String level
         String status
+        String mentor_id FK
         DateTime created_at
     }
 
@@ -158,10 +158,10 @@ erDiagram
         Text description
         DateTime event_date
         String target_audience
-        String mentor_id FK
-        DateTime created_at
         String status
         DateTime scheduled_at
+        String mentor_id FK
+        DateTime created_at
     }
 
     AnnouncementNotification {
